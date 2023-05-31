@@ -1,45 +1,50 @@
-const inputPalabras = document.getElementById("inputPalabras");
-const botonAgregarPalabras = document.getElementById("botonAgregarPalabras");
-const listaPalabras = document.getElementById("lista-palabras");
-const nombreSeleccionado = document.getElementById("nombre-seleccionado");
-const wink = document.getElementById("wink");
-const spinSound = document.getElementById("spin-sound");
-const whoosh = document.getElementById("whoosh");
-const lastName = document.getElementById("last-name");
-const tic = document.getElementById("tic");
-const time = document.getElementById("time");
-const log = document.getElementById("log");
-const cronometer = document.getElementById("cronometer");
-const botonLimpiarOpciones = document.getElementById("limpiar-opciones");
-const alerta = document.getElementById("alerta");
-const canvas = document.getElementById("canvas");
-const randomColorOffset = parseInt(Math.random() * 147);
+import { createStarrySky } from "./components/starrySky";
+import { querySelector, toInt } from "./utils";
 
-let options = [];
+const inputPalabras = querySelector('#inputPalabras') as HTMLInputElement;
+const botonAgregarPalabras = querySelector('#botonAgregarPalabras') as HTMLButtonElement;
+const listaPalabras = querySelector('#lista-palabras') as HTMLDivElement;
+const nombreSeleccionado = querySelector('#nombre-seleccionado') as HTMLDivElement;
+const wink = querySelector('#wink') as HTMLAudioElement;
+const spinSound = querySelector('#spin-sound') as HTMLAudioElement;
+const whoosh = querySelector('#whoosh') as HTMLAudioElement;
+const lastName = querySelector('#last-name') as HTMLAudioElement;
+const tic = querySelector('#tic') as HTMLAudioElement;
+const time = querySelector('#time') as HTMLDivElement;
+const log = querySelector('#log') as HTMLDivElement;
+const cronometer = querySelector('#cronometer') as HTMLDivElement;
+const botonLimpiarOpciones = querySelector('#limpiar-opciones') as HTMLButtonElement;
+const alerta = querySelector('#alerta') as HTMLDivElement;
+const canvas = querySelector('#canvas') as HTMLCanvasElement;
+const spin = querySelector("#spin") as HTMLButtonElement;
+
+const randomColorOffset = Math.trunc(Math.random() * 147);
+
+let options: string[] = [];
 let startAngle = (Math.random() * 360) | 0;
 let arc = Math.PI / (options.length / 2);
 let spinTimeout = null;
-let spinAngleStart;
+let spinAngleStart: number;
 let spinArcStart = 10;
 let spinTime = 0;
 let spinTimeTotal = 0;
-let ctx;
+let ctx: CanvasRenderingContext2D;
 let counterNames = 0;
-let centerX;
-let centerY;
-let outsideRadius;
-let textRadius;
-let insideRadius;
-let colorPallete;
+let centerX: number;
+let centerY: number;
+let outsideRadius: number;
+let textRadius: number;
+let insideRadius: number;
+let colorPallete: any[];
 
 const emojiFaces = ["😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🧐", "🤓", "😎", "🤩", "🥳", "😏", "😒", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🤭", "🤫", "🤥", "😶", "😐", "😑", "😬", "🙄", "😯", "😦", "😧", "😮", "😲", "😴", "🤤", "😪", "😵", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿", "👹", "👺", "🤡", "💩", "👻", "👽", "👾", "🤖", "🎃"];
 
 
-const nombres = [ "Juli", "Mati-S", "Dami", "Eze", "Maat", "Jose", "Gabi", "Mauricio", "Martin-F", "Agustin-J", "Gabriela", "Lucas", "Cele", "Mati-M", "Juli-M", "Dami-S", "Eze-G", "Diego"
+const nombres = ["Juli", "Mati-S", "Dami", "Eze", "Maat", "Jose", "Gabi", "Mauricio", "Martin-F", "Agustin-J", "Gabriela", "Lucas", "Cele", "Mati-M", "Juli-M", "Dami-S", "Eze-G", "Diego"
 ];
 
 
-const fixedStartTime = () => parseInt(new Date().getTime() / 1000) * 1000
+const fixedStartTime = () => Math.trunc(new Date().getTime() / 1000) * 1000
 
 let cronometerTime = fixedStartTime();
 
@@ -54,10 +59,10 @@ const clearCronometerText = () => cronometer.innerText = "";
 const calculateTimeDiffCronometer = () => {
   const difference = new Date().getTime() - cronometerTime;
   const seconds =
-    parseInt(difference / 1000) >= 60
-      ? (parseInt(difference / 1000) % 60).toString().padStart(2, "0")
-      : parseInt(difference / 1000) % 60;
-  const minutes = parseInt(difference / 1000 / 60);
+    toInt(difference / 1000) >= 60
+      ? (toInt(difference / 1000) % 60).toString().padStart(2, "0")
+      : toInt(difference / 1000) % 60;
+  const minutes = toInt(difference / 1000 / 60);
   const out = `${minutes > 0 ? minutes + "m" : ""}${seconds}s`;
   return out;
 };
@@ -76,14 +81,8 @@ const renderTime = () => {
 };
 renderTime();
 
-const shuffleList = (arr) => {
-  return arr
-    .map((value) => ({ value, sort: Math.random() }))
-    .sort((a, b) => a.sort - b.sort)
-    .map(({ value }) => value);
-};
 
-const shiftPositions = (arr, offset) => {
+const shiftPositions = (arr: any[], offset: number) => {
   let shifted = [];
   for (let i = 0; i < arr.length; i++) {
     shifted.push(arr[(i + offset) % arr.length]);
@@ -91,13 +90,12 @@ const shiftPositions = (arr, offset) => {
   return shifted;
 };
 
-const createColorPallete = (max) => {
+const createColorPallete = (max: number) => {
   const initialOffset = Math.random() * 255;
   let colors = [];
   for (let acc = 0, n = 0; n < max; n += 1) {
-    console.log(n);
     colors.push(`hsla(${(initialOffset + acc) % 360}deg, 69%, ${Math.random() * 20 + 50}%, 0.5)`);
-    acc += parseInt(Math.random() * 50 + 10);
+    acc += toInt(Math.random() * 50 + 10);
   }
   return colors;
 };
@@ -111,11 +109,11 @@ const buildColorPallete = () => {
 buildColorPallete();
 
 const getEmoji = () => {
-  const emoji = emojiFaces[parseInt(Math.abs(Math.random() * emojiFaces.length * 3)) % emojiFaces.length]
+  const emoji = emojiFaces[toInt(Math.abs(Math.random() * emojiFaces.length * 3)) % emojiFaces.length]
   return emoji;
 };
 
-const createItem = (emoji, name) => {
+const createItem = (emoji: string, name: any) => {
   const item = document.createElement("div");
   item.className = "nombre";
   item.innerHTML = `<div class="name-icon">${emoji}</div><div class="name-text">${name}</div>`;
@@ -127,33 +125,36 @@ const createItem = (emoji, name) => {
   return item;
 };
 
-const addItem = (valor) => {
+const addItem = (valor: string) => {
   const emoji = getEmoji();
   const name = valor.toUpperCase();
   options.push(`${emoji} ${name}`);
   listaPalabras.appendChild(createItem(emoji, name));
 };
 
-const deleteItem = (name) => {
+const deleteItem = async (name: string) => {
   const itemsElements = [].slice.call(listaPalabras.children);
-  const li = itemsElements.find((li) => {
-    console.log({li: li.lastChild.innerText, name})
-    return li.lastChild.innerText.trim().toUpperCase().includes(name.trim())
-  });
+  const li = itemsElements.find((li: HTMLLIElement) => {
+    return li.lastChild?.textContent?.trim().toUpperCase().includes(name.trim());
+  }) as HTMLLIElement | undefined;;
 
-  const index = options.findIndex(item => item.includes(name.trim()));
-  console.log({index});
-  if (index > -1) {
-    options.splice(index, 1);
-    colorPallete.splice(index, 1);
+  if (li !== undefined) {
+    const index = options.findIndex(item => item.includes(name.trim()));
+    console.log({ index });
+    if (index > -1) {
+      options.splice(index, 1);
+      colorPallete.splice(index, 1);
+    }
+    listaPalabras.removeChild(li);
+    whoosh.pause();
+    whoosh.currentTime = 0;
+    await whoosh.play();
+  } else {
+    console.error({ message: 'li not found' })
   }
-  listaPalabras.removeChild(li);
-  whoosh.pause();
-  whoosh.currentTime = 0;
-  whoosh.play();
 };
 
-const getColor = (index, maxItem) => {
+const getColor = (index: number) => {
   return colorPallete[index % colorPallete.length];
 };
 
@@ -174,13 +175,13 @@ const dibujarRuleta = () => {
   ctx.strokeStyle = "#999";
   ctx.lineWidth = 4;
   ctx.beginPath();
-  ctx.arc(0, 0, outsideRadius, 0, Math.PI*2);
+  ctx.arc(0, 0, outsideRadius, 0, Math.PI * 2);
   ctx.stroke()
   ctx.closePath();
 
   options.forEach((item, i) => {
     const angle = startAngle + i * arc;
-    ctx.fillStyle = getColor(i, options.length);
+    ctx.fillStyle = getColor(i);
     ctx.strokeStyle = "#333";
     ctx.lineWidth = 2;
     ctx.lineCap = "round";
@@ -216,7 +217,7 @@ const dibujarRuleta = () => {
   ctx.strokeStyle = "#222";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.arc(0, -(outsideRadius + 14), 7, 0, Math.PI*2);
+  ctx.arc(0, -(outsideRadius + 14), 7, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
   ctx.closePath();
@@ -248,7 +249,7 @@ const logTimeAndName = () => {
   }
 };
 
-const spin = () => {
+const spinWheel = () => {
   if (spinTime >= spinTimeTotal) {
     //spinSound.currentTime = 0;
     //spinSound.play();
@@ -294,8 +295,7 @@ const dibujarNombreSeleccionado = () => {
 };
 
 const stopRotateWheel = () => {
-  const name = getSelectedName();
-  setNombreSeleccionado(name);
+  setNombreSeleccionado();
   dibujarNombreSeleccionado();
   resetCronometer();
   increaseCountName();
@@ -309,11 +309,11 @@ const stopRotateWheel = () => {
     lastName.play();
   } else if (options.length > 1) {
     wink.play();
-    setTimeout(() => deleteItem(name.slice(2)), 750);
+    setTimeout(() => deleteItem(getSelectedName().slice(2)), 750);
   }
 };
 
-const easeOut = (t, b, c, d) => {
+const easeOut = (t: number, b: number, c: number, d: number) => {
   const ts = (t /= d) * t;
   const tc = ts * t;
   //console.log("in: ",t, b, c, d);
@@ -329,7 +329,7 @@ const getSelectedName = () => {
   return options[index];
 };
 
-const setNombreSeleccionado = (name) => {
+const setNombreSeleccionado = () => {
   nombreSeleccionado.innerText = getSelectedName();
 };
 
@@ -337,7 +337,7 @@ const position = {
   degrees: 0,
   arcd: 0,
   index: 0,
-  name: 0
+  name: ''
 };
 
 const acorde = [
@@ -381,10 +381,10 @@ function getNote() {
   return nota;
 }
 
-const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+const audioContext = new (window.AudioContext)();
 
 // Función para reproducir una nota
-function reproducirNota(frecuencia, duracion) {
+function reproducirNota(frecuencia: number, duracion: number) {
   // Crear oscilador
   const oscilador = audioContext.createOscillator();
   oscilador.type = 'sine'; // Forma de onda del oscilador (sine, square, sawtooth, triangle)
@@ -406,7 +406,7 @@ function reproducirNota(frecuencia, duracion) {
   const fadeOutStartTime = audioContext.currentTime + duracion - 0.1; // Desvanecimiento de 0.1 segundos antes del final
 
   // Aplicar desvanecimiento
-  ganancia.gain.setValueAtTime(.1, audioContext.currentTime); // Volumen inicial
+  ganancia.gain.setValueAtTime(.04, audioContext.currentTime); // Volumen inicial
   ganancia.gain.linearRampToValueAtTime(0, fadeOutStartTime); // Desvanecimiento lineal hacia 0
 
   // Detener el oscilador después de la duración especificada
@@ -432,50 +432,8 @@ const cursorPosition = function () {
   }
 };
 
-/* STARS*/
-const randomStarColor = () => {
-  return `hsl(${parseInt(Math.random() * 8745) % 255}deg 70% 60%)`;
-};
 
-const stars = document.querySelector("#stars");
-const maxStars = Math.abs(Math.random() * 293);
-for (let i = 0; i < maxStars; i++) {
-  stars.appendChild(
-    (() => {
-      let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      svg.innerHTML = `<defs><filter id="glow"><feGaussianBlur stdDeviation="1.5" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
-      let radius = Math.random() * 2.5 + 3;
-      svg.setAttribute("class", "star");
-      svg.setAttribute("viewBox", "0 0 240 240");
-      svg.style.width = radius + "px";
-      svg.style.height = radius + "px";
-      svg.style.transform = "rotate(" + ((Math.random() * 100) | 0) + "deg)";
-      svg.style.left = ((Math.random() * 120) | 0) + "vw";
-      svg.style.top = ((Math.random() * 120) | 0) + "vh";
-      svg.style.opacity = Math.random() * 0.214 + 0.657;
-      let path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      //svg.setAttribute("transform", "rotate(120, 120 "+((Math.random() * 360) | 0)+")");
-      path.setAttribute("d", "m48,234 73-226 73,226-192-140h238z");
-      path.setAttribute("fill", randomStarColor());
-      path.setAttribute("filter", "url(#glow)");
-      svg.appendChild(path);
-      return svg;
-    })()
-  );
-}
-window.onmouseup = function () {
-  document.querySelectorAll(".seccion").forEach(function (seccion) {
-    seccion.classList.remove("buttonDown");
-  });
-};
-
-document.querySelectorAll(".seccion").forEach(function (seccion) {
-  seccion.onmousedown = function () {
-    this.classList.add("buttonDown");
-  };
-});
-
-document.getElementById("spin").addEventListener("click", spin);
+spin.addEventListener("click", spinWheel);
 
 inputPalabras.addEventListener("keypress", function (event) {
   if (event.key === "Enter") {
@@ -487,7 +445,7 @@ inputPalabras.addEventListener("keypress", function (event) {
 window.addEventListener("keydown", function (e) {
   if (e.code === 'KeyS' && e.target == document.body) {
     e.preventDefault();
-    spin();
+    spinWheel();
   }
 });
 
@@ -523,7 +481,8 @@ botonLimpiarOpciones.addEventListener("click", function () {
 });
 
 window.onload = function () {
-  ctx = canvas.getContext("2d");
+  createStarrySky();
+  ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
   outsideRadius = 255;
   textRadius = 180;
   insideRadius = 90;
@@ -542,6 +501,6 @@ window.onload = function () {
   lastName.volume = 0.3;
   tic.volume = 0.29;
 
-  document.body.style.backgroundColor = `hsl(${parseInt(Math.random() * 8745) % 255}deg 70% 0%)`;
+  document.body.style.backgroundColor = `hsl(${toInt(Math.random() * 8745) % 255}deg 70% 0%)`;
 };
 

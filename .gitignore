@@ -1,0 +1,44 @@
+# Ignore node_modules directory
+node_modules/
+
+# Ignore build output directories
+#dist/
+build/
+
+# Ignore development environment files
+.env
+
+# Ignore TypeScript configuration files
+tsconfig.json
+tsconfig.*.json
+
+# Ignore editor and IDE files
+.vscode/
+.idea/
+
+# Ignore package lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Ignore logs and generated files
+*.log
+*.log.*
+*.swp
+*.swo
+.DS_Store
+
+# Ignore user-specific files
+*.bak
+*.tmp
+*.backup
+*.vsix
+Thumbs.db
+
+# Ignore macOS specific files
+.AppleDouble
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
