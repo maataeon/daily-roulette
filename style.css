@@ -2,6 +2,7 @@ body {
   height: 100vh;
   margin: 0 !important;
   font-family: "Ubuntu", sans-serif;
+  background-color: #030303;
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
