@@ -5,6 +5,7 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+  overflow: hidden;
 }
 
 body * {
@@ -492,6 +493,10 @@ section {
   width: 100%;
   display: flex;
   justify-content: space-between;
+}
+
+.p5Canvas {
+  opacity: 0.4;
 }
 
 /* For WebKit-based browsers (Chrome, Safari, Opera) */
