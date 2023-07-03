@@ -1,7 +1,7 @@
-import { querySelector } from "../utils";
+import { easeOut, querySelector } from "../utils";
 import { playChangeItem, playLastName, playWink } from "./audio";
-import { deleteItem, getItem, getItemColor, getItems } from "./itemList";
-import { increaseCountName, logTimeAndName, resetCounterNames } from "./log";
+import { deleteItem, disableItems, enableItems, finishSelectedItem, getItem, getItems, getSelectedItem, setSelectedItem } from "./itemList";
+import { increaseCountName } from "./log";
 import { clearCronometerText, resetCronometer } from "./time";
 
 const canvas = querySelector('#canvas') as HTMLCanvasElement;
@@ -18,21 +18,15 @@ let centerY: number;
 let outsideRadius: number;
 let textRadius: number;
 let insideRadius: number;
-
-
-const position = {
-  degrees: 0,
-  arcd: 0,
-  index: 0,
-  name: ''
-};
+let spining = false;
+let lastIndex: number;
 
 export const dibujarRuleta = () => {
   arc = Math.PI / (getItems().length / 2);
 
   ctx.fillStyle = "rgba(0,0,0,0.1)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  //ctx.globalCompositeOperation = "multiply";
+  //ctx.globalCompositeOperation = "difference";
   //ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.save();
   ctx.translate(centerX, centerY);
@@ -50,7 +44,7 @@ export const dibujarRuleta = () => {
 
   getItems().forEach((item, i) => {
     const angle = startAngle + i * arc;
-    ctx.fillStyle = getItemColor(i);
+    ctx.fillStyle = item.color.toString();
     ctx.strokeStyle = "#333";
     ctx.lineWidth = 2;
     ctx.lineCap = "round";
@@ -71,26 +65,26 @@ export const dibujarRuleta = () => {
     );
     ctx.rotate(angle + arc / 2 + Math.PI);
 
-    ctx.font = "bold 14px Arial";
+    ctx.font = "regular 16px 'Roboto'";
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
-    const text = getItem(i).slice(2).split('').join(' ').padEnd(20, ' ');
+    const text = getItem(i).name.split('').join(' ').padEnd(20, ' ');
 
-    ctx.fillStyle = "#222";
+    ctx.fillStyle = item.color.lightness < 50 ? "#FEFEFE" : "#030303";
+    ctx.strokeStyle = "rgba(255, 255, 255, .9)";
+    ctx.lineWidth = 1;
+    //ctx.strokeText(text, -ctx.measureText(text).width / 2, 0);
     ctx.fillText(text, -ctx.measureText(text).width / 2, 0);
     ctx.closePath();
     ctx.restore();
   });
 
-  ctx.fillStyle = "#ccc";
-  ctx.strokeStyle = "#222";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.arc(0, -(outsideRadius + 14), 7, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-  ctx.closePath();
+  cursorPosition();
+  ctx.restore();
 
+};
+
+const cursorPosition = function () {
   ctx.fillStyle = "#ccc";
   ctx.strokeStyle = "#222";
   ctx.lineWidth = 1;
@@ -106,46 +100,41 @@ export const dibujarRuleta = () => {
   ctx.stroke();
   ctx.closePath();
 
-
-  ctx.restore();
-
-  cursorPosition();
-};
-
-const cursorPosition = function () {
-  position.degrees = (startAngle * 180) / Math.PI + 90;
-  position.arcd = (arc * 180) / Math.PI;
-  let newIndex = Math.floor((360 - (position.degrees % 360)) / position.arcd);
-  if (newIndex !== position.index) {
-    position.index = newIndex;
-    position.name = getItem(position.index);
+  const degrees = (startAngle * 180) / Math.PI + 90;
+  const arcd = (arc * 180) / Math.PI;
+  let currentIndex = Math.floor((360 - (degrees % 360)) / arcd);
+  if (currentIndex !== lastIndex) {
+    lastIndex = currentIndex;
     playChangeItem();
   }
 };
 
 export const dibujarNombreSeleccionado = () => {
-  const name = getSelectedName();
-  if (!!name) {
+  const item = getSelectedItem();
+  if (item) {
+    const text = `${item.emoji} ${item.name}`
+
     ctx.save();
     ctx.translate(centerX, centerY);
     ctx.fillStyle = "#f2f2f2";
     ctx.font = "bold 32px Arial";
-    ctx.fillText(name, 0 - ctx.measureText(name).width / 2, 0 + 10);
+    ctx.fillText(text, 0 - ctx.measureText(text).width / 2, 0 + 10);
     ctx.fillStyle = "#eee";
     ctx.restore();
   }
 };
 
-const spinWheel = () => {
+const startRotateWheel = () => {
   if (spinTime >= spinTimeTotal) {
     if (getItems().length < 1) {
       console.info('Debe haber al menos 2 opciones');
     } else {
+      setSpinning(true);
+      spin.disabled = true;
+      finishSelectedItem();
       spinAngleStart = Math.random() * (Math.PI * 2) + Math.PI * 2.5;
       spinTime = 0;
       spinTimeTotal = Math.abs(Math.random() * 500) + 5000;
-      logTimeAndName(getSelectedName());
-      resetCounterNames();
       clearCronometerText();
       rotateWheel();
     }
@@ -165,28 +154,35 @@ const rotateWheel = () => {
   }
 };
 
-
 const stopRotateWheel = () => {
-  dibujarNombreSeleccionado();
+  setSpinning(false);
+  const item = getFocusedItem();
+  setSelectedItem(item);
   resetCronometer();
+  dibujarNombreSeleccionado();
   increaseCountName();
-
   if (getItems().length == 1) {
     playLastName();
   } else if (getItems().length > 1) {
     playWink();
-    setTimeout(() => deleteItem(getSelectedName().slice(2)), 750);
+    deleteItem(item);
   }
+  spin.disabled = false;
 };
 
-const easeOut = (t: number, b: number, c: number, d: number) => {
-  const ts = (t /= d) * t;
-  const tc = ts * t;
-  const eased = b + c * (tc + -3 * ts + 3 * t);
-  return eased;
-};
+export const setSpinning = (state: boolean) => {
+  if (state) {
+    spining = state;
+    disableItems();
+  } else {
+    spining = state;
+    enableItems();
+  }
+}  
 
-const getSelectedName = () => {
+export const isSpinning = () => !!spining;
+
+const getFocusedItem = () => {
   const degrees = (startAngle * 180) / Math.PI + 90;
   const arcd = (arc * 180) / Math.PI;
   const index = Math.floor((360 - (degrees % 360)) / arcd);
@@ -196,11 +192,13 @@ const getSelectedName = () => {
 window.addEventListener("keydown", function (e) {
   if (e.code === 'KeyS' && e.target == document.body) {
     e.preventDefault();
-    spinWheel();
+    if (!isSpinning()) { 
+      startRotateWheel()
+    };
   }
 });
 
-spin.addEventListener("click", spinWheel);
+spin.addEventListener("click", startRotateWheel);
 
 export const initRoulette = () => {
   ctx = canvas.getContext("2d") as CanvasRenderingContext2D;

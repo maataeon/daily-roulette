@@ -6,7 +6,7 @@ const wink = querySelector('#wink') as HTMLAudioElement;
 const lastName = querySelector('#last-name') as HTMLAudioElement;
 
 let indiceNota = 0;
-
+let duration = 0.2;
 const escalaMayor = [
   523.25, // C
   587.33, // D
@@ -30,10 +30,11 @@ const getNote = () => {
   return nota;
 }
 
-const reproducirNota = (frecuencia: number, duracion: number) => {
+export const playFrequency = (frequency:number) => {
+
   const oscilador = audioContext.createOscillator();
   oscilador.type = 'sine'; // (sine, square, sawtooth, triangle)
-  oscilador.frequency.value = frecuencia;
+  oscilador.frequency.value = frequency;
 
   const ganancia = audioContext.createGain();
   oscilador.connect(ganancia);
@@ -41,16 +42,17 @@ const reproducirNota = (frecuencia: number, duracion: number) => {
 
   oscilador.start();
 
-  const fadeOutStartTime = audioContext.currentTime + duracion - 0.1; // Desvanecimiento de 0.1 segundos antes del final
+  const fadeOutStartTime = audioContext.currentTime + duration - 0.1; // Desvanecimiento de 0.1 segundos antes del final
   ganancia.gain.setValueAtTime(.04, audioContext.currentTime); // Volumen inicial
   ganancia.gain.linearRampToValueAtTime(0, fadeOutStartTime); // Desvanecimiento lineal hacia 0
 
-  oscilador.stop(audioContext.currentTime + duracion);
+  oscilador.stop(audioContext.currentTime + duration);
 }
 
 export const playChangeItem = () => {
-  reproducirNota(getNote(), 0.2);
+  playFrequency(getNote());
 }
+
 
 export const playLastName = async () => {
   await lastName.play();
@@ -63,4 +65,5 @@ export const playWink = async () => {
 export const initAudio = () => {
   wink.volume = 0.11;
   lastName.volume = 0.3;
+  duration = 0.2
 }

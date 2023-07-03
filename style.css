@@ -219,6 +219,12 @@ section {
   justify-content: center;
   width: 80%;
   margin: 0 auto 0.25rem auto;
+  opacity: 1;
+}
+
+.nombre:disabled {
+  opacity: 0.5;
+  cursor: progress;
 }
 
 .nombre:hover {
@@ -372,7 +378,7 @@ section {
 /* Disabled */
 .material-button:disabled {
   color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.38);
-  background-color: rgba(var(--pure-material-onsurface-rgb, 0, 0, 0), 0.12);
+  background-color: rgba(var(--pure-material-onsurface-rgb, 255, 255, 255), 0.38);
   box-shadow: none;
   cursor: initial;
 }
@@ -429,17 +435,22 @@ section {
   text-indent: 9px;
   font-size: 1.5rem;
   align-items: center;
+  transition-duration: 1000ms !important;
+  opacity: 1;
 }
 
 .boton-spin svg {
   zoom: 2.1;
   rotate: 0deg;
   transition-duration: 600ms;
-  transition-style: ease-in-out;
 }
 
 .boton-spin:hover svg {
   rotate: 540deg;
+}
+
+.boton-spin:disabled {
+  cursor: progress;
 }
 
 .agregar {
@@ -475,7 +486,18 @@ section {
 }
 
 .action-buttons-box {
-  display: none;
+  padding: .5rem;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  background-color: #FEFEFE;
+  color: #111;
+  padding: 0 .25rem;
+}
+.button svg {
+  padding-right: .25rem;
 }
 
 .log {
@@ -494,6 +516,15 @@ section {
   display: flex;
   justify-content: space-between;
 }
+
+.alert {
+  color: #FEFEFE;
+  position: fixed;
+  right: 0.5rem;
+  bottom: 0.5rem;
+}
+
+
 
 /* For WebKit-based browsers (Chrome, Safari, Opera) */
 ::-webkit-scrollbar {

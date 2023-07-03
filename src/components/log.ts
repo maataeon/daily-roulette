@@ -1,3 +1,4 @@
+import { Item } from "../models/Item";
 import { querySelector } from "../utils";
 import { calculateTimeDiffCronometer } from "./time";
 
@@ -11,11 +12,12 @@ export const resetCounterNames = () => itemCounter = 0;
 
 export const increaseCountName = () => itemCounter++;
 
-export const logTimeAndName = (selectedName: string) => {
-  if (!!selectedName) {
+export const logTimeAndName = (item: Item) => {
+  if (item) {
     log.innerHTML += `
       <div class="logEntry">
-        <div>${selectedName}</div>
+        <div>${item.emoji}</div>
+        <div>${item.name}</div>
         <div>${calculateTimeDiffCronometer()}</div>
       </div>`;
   }

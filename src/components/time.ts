@@ -1,4 +1,5 @@
 import { fixedStartTime, querySelector, toInt } from "../utils";
+import { getSelectedItem } from "./itemList";
 import { getItemCounter } from "./log";
 
 const cronometer = querySelector('#cronometer') as HTMLDivElement;
@@ -28,7 +29,7 @@ export const initTime = () => {
   const hour = ("0" + date.getHours()).slice(-2);
   time.innerText = `${hour}:${minutes}`;
 
-  if (getItemCounter() > 0) {
+  if (getItemCounter() > 0 && getSelectedItem() != null) {
     cronometer.innerText = `+ ${calculateTimeDiffCronometer()}`;
   }
 

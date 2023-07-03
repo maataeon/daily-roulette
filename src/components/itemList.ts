@@ -1,101 +1,72 @@
-import { querySelector, toInt } from "../utils";
+import { Item } from "../models/Item";
+import { querySelector } from "../utils";
+import { pushAlert } from "./alertMsg";
+import { logTimeAndName } from "./log";
 import { dibujarNombreSeleccionado, dibujarRuleta } from "./roulette";
 
 const inputPalabras = querySelector('#inputPalabras') as HTMLInputElement;
 const botonAgregarPalabras = querySelector('#botonAgregarPalabras') as HTMLButtonElement;
 const listaPalabras = querySelector('#lista-palabras') as HTMLDivElement;
+const saveAsDefaultButton = querySelector('#saveAsDefault') as HTMLButtonElement;
 
-const randomColorOffset = Math.trunc(Math.random() * 147);
 
-let options: string[] = [];
-let colorPallete: any[];
-const nombres = ["Juli", "Mati-S", "Dami", "Eze", "Maat", "Jose", "Gabi", "Mauricio", "Martin-F", "Agustin-J", "Gabriela", "Lucas", "Cele", "Mati-M", "Juli-M", "Dami-S", "Eze-G", "Diego"
-];
-const emojiFaces = ["😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🧐", "🤓", "😎", "🤩", "🥳", "😏", "😒", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🤭", "🤫", "🤥", "😶", "😐", "😑", "😬", "🙄", "😯", "😦", "😧", "😮", "😲", "😴", "🤤", "😪", "😵", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿", "👹", "👺", "🤡", "💩", "👻", "👽", "👾", "🤖", "🎃"];
+let options: Item[] = [];
+let selectedItem: Item | null;
+let nombres: string[] | null;
+const defaultNameJSON = `{
+  "items":[
+     "default",
+     "empty"
+  ]
+}`;
 
-export const getItem = (index: number) => {
-  return options[index];
-}
+export const getItems = () => options;
 
-export const getItems = () => {
-  return options;
-}
+export const getItem = (index: number): Item => options[index];
 
-const getEmoji = () => {
-  const emoji = emojiFaces[toInt(Math.abs(Math.random() * emojiFaces.length * 3)) % emojiFaces.length]
-  return emoji;
-};
-export const getItemColor = (index: number) => {
-  return colorPallete[index % colorPallete.length];
-};
+export const setSelectedItem = (item: Item) => selectedItem = item;
 
-const createItem = (emoji: string, name: any) => {
-  const item = document.createElement("div");
-  item.className = "nombre";
-  item.innerHTML = `<div class="name-icon">${emoji}</div><div class="name-text">${name}</div>`;
-  item.onclick = () => {
-    deleteItem(name);
+export const getSelectedItem = () => selectedItem
+
+const getItemElements = () => [].slice.call(listaPalabras.children);
+
+const addItem = (valor: string) => {
+  const name = valor.toUpperCase();
+  const item = new Item(name);
+  options.push(item);
+  item.element.onclick = () => {
+    deleteItem(item);
     dibujarRuleta();
     dibujarNombreSeleccionado();
   };
-  return item;
-};
-
-const addItem = (valor: string) => {
-  const emoji = getEmoji();
-  const name = valor.toUpperCase();
-  options.push(`${emoji} ${name}`);
-  listaPalabras.appendChild(createItem(emoji, name));
-};
-
-export const deleteItem = async (name: string) => {
-  const itemsElements = [].slice.call(listaPalabras.children);
-  const li = itemsElements.find((li: HTMLLIElement) => {
-    return li.lastChild?.textContent?.trim().toUpperCase().includes(name.trim());
-  }) as HTMLLIElement | undefined;;
-
-  if (li !== undefined) {
-    const index = options.findIndex(item => item.includes(name.trim()));
-    console.log({ index });
-    if (index > -1) {
-      options.splice(index, 1);
-      colorPallete.splice(index, 1);
-    }
-    listaPalabras.removeChild(li);
-  } else {
-    console.error({ message: 'li not found' })
-  }
+  listaPalabras.appendChild(item.element);
 };
 
 
-const shiftPositions = (arr: any[], offset: number) => {
-  let shifted = [];
-  for (let i = 0; i < arr.length; i++) {
-    shifted.push(arr[(i + offset) % arr.length]);
-  }
-  return shifted;
+export const deleteItem = async (item: Item) => {
+  item.element.remove();
+  options = options.filter(i => i.id != item.id)
 };
 
-const createColorPallete = (max: number) => {
-  const initialOffset = Math.random() * 255;
-  let colors = [];
-  for (let acc = 0, n = 0; n < max; n += 1) {
-    colors.push(`hsla(${(initialOffset + acc) % 360}deg, 69%, ${Math.random() * 20 + 50}%, 0.5)`);
-    acc += toInt(Math.random() * 50 + 10);
-  }
-  return colors;
-};
-export const buildColorPallete = () => {
-  colorPallete = shiftPositions(
-    createColorPallete(nombres.length),
-    randomColorOffset
-  );
-};
+export const disableItems = () => getItemElements().forEach(
+  (item: HTMLButtonElement) => item.disabled = true
+);
+
+export const enableItems = () => getItemElements().forEach(
+  (item: HTMLButtonElement) => item.disabled = false
+);
 
 export const loadInitialItems = () => {
-  nombres.forEach((nombre) => {
+  nombres?.forEach((nombre) => {
     addItem(nombre);
   });
+}
+
+export const finishSelectedItem = () => {
+  if (selectedItem) {
+    logTimeAndName(selectedItem);
+    selectedItem = null;
+  }
 }
 
 inputPalabras.addEventListener("keypress", function (event) {
@@ -113,14 +84,21 @@ botonAgregarPalabras.addEventListener("click", () => {
         addItem(name);
       }
     });
-    buildColorPallete();
     dibujarRuleta();
     dibujarNombreSeleccionado();
     inputPalabras.value = "";
   }
 });
 
+saveAsDefaultButton.addEventListener("click", () => {
+  const namesArray = getItems().map(item => item.name);
+  console.log({namesArray});
+  localStorage.setItem("defaultNames", JSON.stringify({ items: namesArray}));
+  pushAlert("saved 👍")
+});
+
 export const initItemList = () => {
-  buildColorPallete();
+  const defaultNames = JSON.parse(localStorage.getItem("defaultNames") ?? defaultNameJSON);
+  nombres = defaultNames.items;
   loadInitialItems();
 }
