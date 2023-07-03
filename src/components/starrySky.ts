@@ -4,7 +4,7 @@ const randomStarColor = () => {
   return `hsl(${Math.trunc(Math.random() * 8745) % 255}deg 70% 60%)`;
 };
 
-export function createStarrySky() {
+export function initStarrySky() {
   const maxStars = Math.abs(Math.random() * 293);
   const stars = querySelector("#stars") as HTMLDivElement;
 
