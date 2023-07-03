@@ -518,8 +518,11 @@ section {
   justify-content: space-between;
 }
 
-.p5Canvas {
-  opacity: 0.4;
+.alert {
+  color: #FEFEFE;
+  position: fixed;
+  right: 0.5rem;
+  bottom: 0.5rem;
 }
 
 /* For WebKit-based browsers (Chrome, Safari, Opera) */
