@@ -23,7 +23,7 @@ export class Item {
   buildHTMLButtonElement = () => {
     const itemElement = document.createElement("button");
     itemElement.id = this.id;
-    itemElement.className = "nombre";
+    itemElement.className = "item";
     itemElement.innerHTML = `
     <div class="name-icon">${this.emoji}</div>
     <div class="name-text">${this.name}</div>

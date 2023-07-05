@@ -42,3 +42,7 @@ export const easeOut = (t: number, b: number, c: number, d: number) => {
   const eased = b + c * (tc + -3 * ts + 3 * t);
   return eased;
 };
+
+export const valueOf = (input: HTMLInputElement) => {
+  return parseFloat(input.value) ?? .0;
+}

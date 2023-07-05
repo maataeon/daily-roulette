@@ -1,11 +1,18 @@
-import { easeOut, querySelector } from "../utils";
+import { MousePosition } from '../models/MousePosition';
+import { easeOut, querySelector, valueOf } from "../utils";
 import { playChangeItem, playLastName, playWink } from "./audio";
 import { deleteItem, disableItems, enableItems, finishSelectedItem, getItem, getItems, getSelectedItem, setSelectedItem } from "./itemList";
 import { increaseCountName } from "./log";
 import { clearCronometerText, resetCronometer } from "./time";
 
-const canvas = querySelector('#canvas') as HTMLCanvasElement;
-const spin = querySelector("#spin") as HTMLButtonElement;
+const wheelCanvas = querySelector('#wheelCanvas') as HTMLCanvasElement;
+const spinButton = querySelector("#spinButton") as HTMLButtonElement;
+const frictionRange = querySelector("#frictionRange") as HTMLInputElement;
+const startVelocityThresholdRange = querySelector("#startVelocityThresholdRange") as HTMLInputElement;
+
+const TWO_PI = Math.PI * 2;
+
+const contrastThreshold = 24;
 
 let startAngle = (Math.random() * 360) | 0;
 let arc = 0;
@@ -20,15 +27,25 @@ let textRadius: number;
 let insideRadius: number;
 let spining = false;
 let lastIndex: number;
+let showIntro = true;
+let dragging = false;
 
-export const dibujarRuleta = () => {
+
+const mousePosition = new MousePosition();
+
+const gammaCorrection = (value: number) => {
+  // Gamma value (adjust as needed)
+  const gamma = 2.2;
+  return Math.pow(value / 100, gamma) * 100;
+}
+
+export const drawWheel = () => {
   arc = Math.PI / (getItems().length / 2);
 
   ctx.fillStyle = "rgba(0,0,0,0.1)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, wheelCanvas.width, wheelCanvas.height);
   //ctx.globalCompositeOperation = "difference";
   //ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.save();
   ctx.translate(centerX, centerY);
 
   ctx.strokeStyle = "white";
@@ -69,8 +86,10 @@ export const dibujarRuleta = () => {
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
     const text = getItem(i).name.split('').join(' ').padEnd(20, ' ');
+    const correctedLuminosity = gammaCorrection(item.color.lightness);// Umbral para decidir el color del texto (ajusta según tus necesidades)
 
-    ctx.fillStyle = item.color.lightness < 50 ? "#FEFEFE" : "#030303";
+    const textColor = correctedLuminosity < contrastThreshold ? "#FEFEFE" : "#030303"
+    ctx.fillStyle = textColor;
     ctx.strokeStyle = "rgba(255, 255, 255, .9)";
     ctx.lineWidth = 1;
     //ctx.strokeText(text, -ctx.measureText(text).width / 2, 0);
@@ -80,7 +99,7 @@ export const dibujarRuleta = () => {
   });
 
   cursorPosition();
-  ctx.restore();
+  ctx.translate(-centerX, -centerY);
 
 };
 
@@ -105,7 +124,7 @@ const cursorPosition = function () {
   let currentIndex = Math.floor((360 - (degrees % 360)) / arcd);
   if (currentIndex !== lastIndex) {
     lastIndex = currentIndex;
-    playChangeItem();
+    if (!showIntro) playChangeItem();
   }
 };
 
@@ -125,12 +144,13 @@ export const dibujarNombreSeleccionado = () => {
 };
 
 const startRotateWheel = () => {
+  if (showIntro) showIntro = false;
   if (spinTime >= spinTimeTotal) {
     if (getItems().length < 1) {
       console.info('Debe haber al menos 2 opciones');
     } else {
       setSpinning(true);
-      spin.disabled = true;
+      spinButton.disabled = true;
       finishSelectedItem();
       spinAngleStart = Math.random() * (Math.PI * 2) + Math.PI * 2.5;
       spinTime = 0;
@@ -149,7 +169,7 @@ const rotateWheel = () => {
     const spinAngle =
       spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
     startAngle += (spinAngle * Math.PI) / 180;
-    dibujarRuleta();
+    drawWheel();
     requestAnimationFrame(rotateWheel);
   }
 };
@@ -167,7 +187,9 @@ const stopRotateWheel = () => {
     playWink();
     deleteItem(item);
   }
-  spin.disabled = false;
+  spinButton.disabled = false;
+  
+  setTimeout(activateIntro, 0);
 };
 
 export const setSpinning = (state: boolean) => {
@@ -178,7 +200,7 @@ export const setSpinning = (state: boolean) => {
     spining = state;
     enableItems();
   }
-}  
+}
 
 export const isSpinning = () => !!spining;
 
@@ -189,23 +211,138 @@ const getFocusedItem = () => {
   return getItem(index);
 };
 
-window.addEventListener("keydown", function (e) {
+
+function calcularAngulo(): number {
+  // Obtener la posición del mouse relativa al canvas
+  const rect = wheelCanvas.getBoundingClientRect();
+  const x = mousePosition.x - rect.left;
+  const y = mousePosition.y - rect.top;
+
+  // Obtener las coordenadas del centro del canvas
+  const centerX = wheelCanvas.width / 2;
+  const centerY = wheelCanvas.height / 2;
+
+  // Calcular el ángulo en radianes utilizando atan2
+  const radians = Math.atan2(y - centerY, x - centerX);
+
+  return radians;
+}
+let throwVelocity = 0;
+let initialPointerAngle = 0;
+let initialStartAngle = 0;
+const introAnimation = () => {
+  if (dragging) {
+    const pointerAngle = calcularAngulo();
+    startAngle = (pointerAngle - initialPointerAngle) + initialStartAngle;
+    drawWheel();
+    throwVelocity = (mousePosition.angle - pointerAngle) * -.7;
+    mousePosition.angle = pointerAngle;
+  } else {
+    if (throwVelocity > valueOf(startVelocityThresholdRange)) {
+      throwVelocity = 0;
+      startRotateWheel();
+      return;
+    } else if (throwVelocity) {
+      throwVelocity *= valueOf(frictionRange);
+      startAngle += throwVelocity;
+      drawWheel();
+    }
+  }
+
+  if (showIntro) {
+    requestAnimationFrame(introAnimation)
+  }
+}
+
+const activateIntro = () => {
+  showIntro = true;
+  introAnimation();
+}
+
+const drawMeasures = (radians: number) => {
+  // Convertir el ángulo a grados
+  let degrees = radians * (180 / Math.PI);
+
+
+  const rect = wheelCanvas.getBoundingClientRect();
+  const x = mousePosition.x - rect.left;
+  const y = mousePosition.y - rect.top;
+  // Ajustar el rango de ángulos a [0, 360]
+  if (degrees < 0) {
+    degrees += 360;
+  }
+  //ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Dibujar el eje x
+  ctx.beginPath();
+  ctx.moveTo(0, centerY);
+  ctx.lineTo(wheelCanvas.width, centerY);
+  ctx.strokeStyle = 'green';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Dibujar el eje y
+  ctx.beginPath();
+  ctx.moveTo(centerX, 0);
+  ctx.lineTo(centerX, wheelCanvas.height);
+  ctx.strokeStyle = 'green';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Dibujar la línea
+  ctx.beginPath();
+  ctx.moveTo(centerX, centerY);
+  ctx.lineTo(x, y);
+  ctx.strokeStyle = 'blue';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Dibujar el arco
+  const radius = Math.min(centerX, centerY);
+  const startAngle = 0;
+  const endAngle = radians;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+  ctx.strokeStyle = 'red';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+window.addEventListener("keydown", (e) => {
   if (e.code === 'KeyS' && e.target == document.body) {
     e.preventDefault();
-    if (!isSpinning()) { 
+    if (!isSpinning()) {
       startRotateWheel()
     };
   }
 });
 
-spin.addEventListener("click", startRotateWheel);
+spinButton.addEventListener("click", startRotateWheel);
+
+wheelCanvas.addEventListener("mousedown", (event) => {
+  dragging = true;
+  initialPointerAngle = calcularAngulo();
+  initialStartAngle = startAngle;
+  wheelCanvas.classList.add("grabbing");
+});
+
+window.addEventListener("mouseup", (event) => {
+  dragging = false;
+  wheelCanvas.classList.remove("grabbing");
+});
+
+window.addEventListener("mousemove", (event) => {
+  mousePosition.x = event.clientX;
+  mousePosition.y = event.clientY;
+});
 
 export const initRoulette = () => {
-  ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+  ctx = wheelCanvas.getContext("2d") as CanvasRenderingContext2D;
   outsideRadius = 255;
   textRadius = 180;
   insideRadius = 90;
-  centerX = canvas.width / 2;
-  centerY = canvas.height / 2;
-  dibujarRuleta();
+  centerX = wheelCanvas.width / 2;
+  centerY = wheelCanvas.height / 2;
+  drawWheel();
+  introAnimation();
 }

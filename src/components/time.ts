@@ -6,7 +6,7 @@ const cronometer = querySelector('#cronometer') as HTMLDivElement;
 const time = querySelector('#time') as HTMLDivElement;
 
 let cronometerTime = fixedStartTime();
-
+let lastDateNow = Date.now();
 export const clearCronometerText = () => cronometer.innerText = "";
 
 export const resetCronometer = () => cronometerTime = new Date().getTime();
@@ -24,14 +24,17 @@ export const calculateTimeDiffCronometer = () => {
 
 
 export const initTime = () => {
-  const date = new Date();
-  const minutes = ("0" + date.getMinutes()).slice(-2);
-  const hour = ("0" + date.getHours()).slice(-2);
-  time.innerText = `${hour}:${minutes}`;
+  if (Date.now() - lastDateNow > 1000) {
+    const date = new Date();
+    const minutes = ("0" + date.getMinutes()).slice(-2);
+    const hour = ("0" + date.getHours()).slice(-2);
+    lastDateNow = Date.now();
+    time.innerText = `${hour}:${minutes}`;
 
-  if (getItemCounter() > 0 && getSelectedItem() != null) {
-    cronometer.innerText = `+ ${calculateTimeDiffCronometer()}`;
+    if (getItemCounter() > 0 && getSelectedItem() != null) {
+      cronometer.innerText = `+ ${calculateTimeDiffCronometer()}`;
+    }
+
   }
-
   requestAnimationFrame(initTime);
 };
