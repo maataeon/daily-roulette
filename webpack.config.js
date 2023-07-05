@@ -22,4 +22,5 @@ module.exports = {
   optimization: {
     emitOnErrors: false,
   },
+  watch: true,
 };

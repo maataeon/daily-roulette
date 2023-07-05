@@ -7,7 +7,8 @@ const lastName = querySelector('#last-name') as HTMLAudioElement;
 
 let indiceNota = 0;
 let duration = 0.2;
-const escalaMayor = [
+
+const majorScale = [
   523.25, // C
   587.33, // D
   659.25, // E
@@ -16,7 +17,7 @@ const escalaMayor = [
   880.00, // A
   987.77  // B
 ];
-const notasEgipcias = [
+const egyptianScale = [
   587.33, // D
   622.25, // D#
   739.99, // F#
@@ -24,9 +25,11 @@ const notasEgipcias = [
   880.00  // A
 ];
 
+let selectedScale = majorScale;
+
 const getNote = () => {
-  const nota = notasEgipcias[indiceNota];
-  indiceNota = (indiceNota + 1) % notasEgipcias.length;
+  const nota = selectedScale[indiceNota];
+  indiceNota = (indiceNota + 1) % selectedScale.length;
   return nota;
 }
 
@@ -60,6 +63,14 @@ export const playLastName = async () => {
 
 export const playWink = async () => {
   await wink.play();
+}
+
+export const selectMajorScale = () => {
+  selectedScale = majorScale;
+}
+
+export const selectEgyptianScale = () => {
+  selectedScale = egyptianScale;
 }
 
 export const initAudio = () => {

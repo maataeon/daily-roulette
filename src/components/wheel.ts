@@ -1,6 +1,6 @@
 import { MousePosition } from '../models/MousePosition';
 import { easeOut, querySelector, valueOf } from "../utils";
-import { playChangeItem, playLastName, playWink } from "./audio";
+import { playChangeItem, playLastName, playWink, selectEgyptianScale, selectMajorScale } from "./audio";
 import { deleteItem, disableItems, enableItems, finishSelectedItem, getItem, getItems, getSelectedItem, setSelectedItem } from "./itemList";
 import { increaseCountName } from "./log";
 import { clearCronometerText, resetCronometer } from "./time";
@@ -8,7 +8,8 @@ import { clearCronometerText, resetCronometer } from "./time";
 const wheelCanvas = querySelector('#wheelCanvas') as HTMLCanvasElement;
 const spinButton = querySelector("#spinButton") as HTMLButtonElement;
 const frictionRange = querySelector("#frictionRange") as HTMLInputElement;
-const startVelocityThresholdRange = querySelector("#startVelocityThresholdRange") as HTMLInputElement;
+const startThresholdRange = querySelector("#startThresholdRange") as HTMLInputElement;
+const stopThresholdRange = querySelector("#stopThresholdRange") as HTMLInputElement;
 
 const TWO_PI = Math.PI * 2;
 
@@ -124,7 +125,7 @@ const cursorPosition = function () {
   let currentIndex = Math.floor((360 - (degrees % 360)) / arcd);
   if (currentIndex !== lastIndex) {
     lastIndex = currentIndex;
-    if (!showIntro) playChangeItem();
+    playChangeItem();
   }
 };
 
@@ -152,9 +153,6 @@ const startRotateWheel = () => {
       setSpinning(true);
       spinButton.disabled = true;
       finishSelectedItem();
-      spinAngleStart = Math.random() * (Math.PI * 2) + Math.PI * 2.5;
-      spinTime = 0;
-      spinTimeTotal = Math.abs(Math.random() * 500) + 5000;
       clearCronometerText();
       rotateWheel();
     }
@@ -162,13 +160,11 @@ const startRotateWheel = () => {
 };
 
 const rotateWheel = () => {
-  spinTime += 19;
-  if (spinTime >= spinTimeTotal) {
+  if (throwVelocity < valueOf(stopThresholdRange)) {
     stopRotateWheel();
   } else {
-    const spinAngle =
-      spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
-    startAngle += (spinAngle * Math.PI) / 180;
+    throwVelocity *= valueOf(frictionRange);
+    startAngle += throwVelocity;
     drawWheel();
     requestAnimationFrame(rotateWheel);
   }
@@ -188,7 +184,7 @@ const stopRotateWheel = () => {
     deleteItem(item);
   }
   spinButton.disabled = false;
-  
+
   setTimeout(activateIntro, 0);
 };
 
@@ -238,14 +234,17 @@ const introAnimation = () => {
     throwVelocity = (mousePosition.angle - pointerAngle) * -.7;
     mousePosition.angle = pointerAngle;
   } else {
-    if (throwVelocity > valueOf(startVelocityThresholdRange)) {
-      throwVelocity = 0;
+    if (throwVelocity > valueOf(startThresholdRange)) {
       startRotateWheel();
       return;
     } else if (throwVelocity) {
-      throwVelocity *= valueOf(frictionRange);
-      startAngle += throwVelocity;
-      drawWheel();
+      if (throwVelocity > valueOf(stopThresholdRange)) {
+        throwVelocity *= valueOf(frictionRange);
+        startAngle += throwVelocity;
+        drawWheel();
+      } else {
+        throwVelocity = 0;
+      }
     }
   }
 
@@ -260,10 +259,7 @@ const activateIntro = () => {
 }
 
 const drawMeasures = (radians: number) => {
-  // Convertir el ángulo a grados
   let degrees = radians * (180 / Math.PI);
-
-
   const rect = wheelCanvas.getBoundingClientRect();
   const x = mousePosition.x - rect.left;
   const y = mousePosition.y - rect.top;
