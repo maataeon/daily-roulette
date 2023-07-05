@@ -146,16 +146,14 @@ export const dibujarNombreSeleccionado = () => {
 
 const startRotateWheel = () => {
   if (showIntro) showIntro = false;
-  if (spinTime >= spinTimeTotal) {
-    if (getItems().length < 1) {
-      console.info('Debe haber al menos 2 opciones');
-    } else {
-      setSpinning(true);
-      spinButton.disabled = true;
-      finishSelectedItem();
-      clearCronometerText();
-      rotateWheel();
-    }
+  if (getItems().length < 1) {
+    console.info('Debe haber al menos 2 opciones');
+  } else {
+    setSpinning(true);
+    spinButton.disabled = true;
+    finishSelectedItem();
+    clearCronometerText();
+    rotateWheel();
   }
 };
 
@@ -313,7 +311,9 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-spinButton.addEventListener("click", startRotateWheel);
+spinButton.addEventListener("click", () => {
+  throwVelocity = 0.3;
+});
 
 wheelCanvas.addEventListener("mousedown", (event) => {
   dragging = true;
