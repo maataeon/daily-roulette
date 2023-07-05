@@ -86,9 +86,8 @@ body {
   display: flex;
   flex-direction: column;
   background: #111;
-  border-right: solid #222 1px;
+  border-right: solid #333 1px;
   box-sizing: border-box;
-  border-bottom: solid #666 1px;
 }
 
 .itemList-container > .tab {
@@ -125,7 +124,7 @@ button.button {
 .itemInput-container {
   display: flex;
   justify-content: space-between;
-  border-bottom: solid #666 1px;
+  border-bottom: solid #333 1px;
   gap: 1rem;
   background: #333333;
   padding: 1.5rem 1rem !important;
@@ -141,11 +140,11 @@ button.button {
   font-size: 1rem;
 }
 
-
 .itemList {
   display: flex;
   flex-grow: 1;
   flex-direction: column;
+  border-bottom: solid #333 1px;
 }
 
 button.item {
