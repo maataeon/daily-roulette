@@ -43,7 +43,7 @@ const gammaCorrection = (value: number) => {
 }
 
 const getRandomStartVelocity = () => {
-  const multiplier = 1 + Math.random() * 0.3
+  const multiplier = 2.2 - Math.random();
   return valueOf(startThresholdRange) * multiplier;
 }
 
