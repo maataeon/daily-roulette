@@ -16,7 +16,7 @@
   <div class="view">
     <div class="itemList-container">
       <div class="tab itemInput-container">
-        <input name="itemInput" type="text" id="itemInput" placeholder="Ingrese un nombre" autocomplete="off">
+        <input name="itemInput" type="text" id="itemInput" placeholder="Enter a name" autocomplete="off">
         <button type="submit" class="button" id="addItem-button" disabled>+</button>
       </div>
       <div id="itemList" class="itemList tab">
@@ -37,11 +37,17 @@
               data-display-id="frictionLabel">
             <span id="frictionLabel" class="inputValueDisplay">0.980</span>
           </div>
-          <label for="startVelocityThresholdRange" class="label">startVelocityThreshold:</label>
+          <label for="startThresholdRange" class="label">startThreshold:</label>
           <div class="inputControl range">
-            <input type="range" id="startVelocityThresholdRange" value="0.230" step="0.01" min="0.01" max="1"
-              data-display-id="startVelocityThresholdLabel">
-            <span id="startVelocityThresholdLabel" class="inputValueDisplay">0.230</span>
+            <input type="range" id="startThresholdRange" value="0.230" step="0.01" min="0.01" max="1"
+              data-display-id="startThresholdLabel">
+            <span id="startThresholdLabel" class="inputValueDisplay">0.230</span>
+          </div>
+          <label for="stopThresholdRange" class="label">startVelocityThreshold:</label>
+          <div class="inputControl range">
+            <input type="range" id="stopThresholdRange" value="0.0008" step="0.0001" min="0.0" max="0.02"
+              data-display-id="stopThresholdRangeLabel">
+            <span id="stopThresholdRangeLabel" class="inputValueDisplay">0.008</span>
           </div>
         </div>
       </div>
@@ -59,7 +65,7 @@
           <path
             d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
         </svg>
-        <span>GIRAR</span>
+        <span>SPIN</span>
       </button>
     </div>
   </div>
