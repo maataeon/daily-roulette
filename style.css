@@ -14,6 +14,9 @@ body {
   z-index: -10;
   position: fixed;
   inset: 0 0 0 0;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 .star {
@@ -33,6 +36,19 @@ body {
   align-items: center;
   align-self: center;
   flex-grow: 1;
+}
+
+body::before {
+  position: absolute;
+  light: 0;
+  top: 0;
+  content: '';
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  opacity: 7%;
+  filter: url(#noiseFilter);
+  pointer-events: none;
 }
 
 .time {
@@ -104,11 +120,11 @@ button {
   -moz-appearance: none;
 }
 
-button:disabled {
+button:disabled, .button:disabled {
   opacity: .5;
 }
 
-button.button {
+button.button, .button {
   display: flex;
   align-items: center;
   background-color: #FEFEFE;
@@ -119,6 +135,18 @@ button.button {
   gap: 0.5rem;
   border-radius: 0.5rem;
   border: solid #666 1px;
+}
+
+.button:hover {
+  outline: 3px solid #ffcf00;
+}
+
+.button:active {
+  outline: 4px solid #ff8800;
+}
+
+.button:hover:disabled, .button:active:disabled {
+  outline: none;
 }
 
 .itemInput-container {
@@ -157,12 +185,16 @@ button.item {
   background: #333;
   color: #FEFEFE;
   cursor: pointer;
-  transition-duration: 300ms;
+  transition-duration: 100ms;
   align-items: center;
 }
 
 .item:hover {
-  background-color: rgb(105, 26, 26);
+  background-color: rgb(105, 0, 0);
+}
+
+.item:active {
+  background-color: rgb(215, 0, 0);
 }
 
 .item:focus {
@@ -175,18 +207,17 @@ button.item {
   box-sizing: border-box;
 }
 
-.inputsContainer {
+.inputs-container {
   display: flex;
   flex-direction: column;
   margin: 1rem 0 .5rem 0;
 }
-
-.inputsContainer label {
+.label {
   color: #FEFEFE;
   font-family: monospace;
 }
 
-.inputsContainer .inputValueDisplay {
+.inputs-container .inputValueDisplay {
   color: #FEFEFE;
   font-family: monospace;
 }
@@ -197,9 +228,28 @@ button.item {
   justify-content: space-between;
 }
 
-.inputControl input {
+.inputControl input[type="range"] {
   width: 256px;
 }
+
+.custom-file-input {
+  display: none;
+}
+
+.custom-file-label {
+  width: 18rem;
+  overflow: hidden;
+  white-space: nowrap;
+  display: block;
+  text-overflow: ellipsis;
+}
+
+/* Styling for the selected file name */
+.file-name {
+  color: white;
+  margin-top: 10px;
+}
+
 
 .log {
   color: #ffffffc7;
@@ -208,6 +258,12 @@ button.item {
   align-items: flex-start;
   padding: 1rem 0.25rem;
   flex-direction: column;
+}
+
+.saveAsDefaultButton-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 2rem;
 }
 
 .logEntry {

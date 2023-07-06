@@ -11,10 +11,10 @@ const gatedLight = () => {
 
 
 export const nextHSLAColor = () => {
-  arcAccumulator += Math.random() * 20 + 30;
+  arcAccumulator += Math.random() * 15 + 30;
   const hue = (initialOffset + arcAccumulator) % 360;
-  const saturation = 69;
-  const light = gatedLight();
+  const saturation = 93;
+  const light = gatedLight() * .6;
   const alpha = 1;
   return new HSLAColor(hue, saturation, light, alpha);
 }

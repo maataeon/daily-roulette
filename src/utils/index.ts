@@ -46,3 +46,8 @@ export const easeOut = (t: number, b: number, c: number, d: number) => {
 export const valueOf = (input: HTMLInputElement) => {
   return parseFloat(input.value) ?? .0;
 }
+
+export const disableButtonTemporarily = (button: HTMLButtonElement) => {
+  button.disabled = true;
+  setTimeout(() => button.disabled = false, 600);
+} 

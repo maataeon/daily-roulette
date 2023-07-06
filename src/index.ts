@@ -4,6 +4,7 @@ import { initItemList } from "./components/itemList";
 import { initRoulette } from "./components/wheel";
 import { initStarrySky } from "./components/starrySky";
 import { initTime } from "./components/time";
+import { initBackground } from "./components/background";
 
 window.onload = function () {
   initStarrySky();
@@ -12,5 +13,6 @@ window.onload = function () {
   initRoulette();
   initAudio();
   initControls();
+  initBackground();
 };
 

@@ -1,6 +1,8 @@
 import { MousePosition } from '../models/MousePosition';
 import { easeOut, querySelector, valueOf } from "../utils";
+import { pushAlert } from './alertMsg';
 import { playChangeItem, playLastName, playWink, selectEgyptianScale, selectMajorScale } from "./audio";
+import { isCustomBackground } from './background';
 import { deleteItem, disableItems, enableItems, finishSelectedItem, getItem, getItems, getSelectedItem, setSelectedItem } from "./itemList";
 import { increaseCountName } from "./log";
 import { clearCronometerText, resetCronometer } from "./time";
@@ -44,9 +46,12 @@ export const drawWheel = () => {
   arc = Math.PI / (getItems().length / 2);
 
   ctx.fillStyle = "rgba(0,0,0,0.1)";
-  ctx.fillRect(0, 0, wheelCanvas.width, wheelCanvas.height);
   //ctx.globalCompositeOperation = "difference";
-  //ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (isCustomBackground()) {
+    ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+  } else {
+    ctx.fillRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+  }
   ctx.translate(centerX, centerY);
 
   ctx.strokeStyle = "white";
@@ -146,15 +151,11 @@ export const dibujarNombreSeleccionado = () => {
 
 const startRotateWheel = () => {
   if (showIntro) showIntro = false;
-  if (getItems().length < 1) {
-    console.info('Debe haber al menos 2 opciones');
-  } else {
-    setSpinning(true);
-    spinButton.disabled = true;
-    finishSelectedItem();
-    clearCronometerText();
-    rotateWheel();
-  }
+  setSpinning(true);
+  spinButton.disabled = true;
+  finishSelectedItem();
+  clearCronometerText();
+  rotateWheel();
 };
 
 const rotateWheel = () => {
@@ -169,6 +170,7 @@ const rotateWheel = () => {
 };
 
 const stopRotateWheel = () => {
+  saveInitialState();
   setSpinning(false);
   const item = getFocusedItem();
   setSelectedItem(item);
@@ -225,27 +227,28 @@ let throwVelocity = 0;
 let initialPointerAngle = 0;
 let initialStartAngle = 0;
 const introAnimation = () => {
-  if (dragging) {
-    const pointerAngle = calcularAngulo();
-    startAngle = (pointerAngle - initialPointerAngle) + initialStartAngle;
-    drawWheel();
-    throwVelocity = (mousePosition.angle - pointerAngle) * -.7;
-    mousePosition.angle = pointerAngle;
-  } else {
-    if (throwVelocity > valueOf(startThresholdRange)) {
-      startRotateWheel();
-      return;
-    } else if (throwVelocity) {
-      if (throwVelocity > valueOf(stopThresholdRange)) {
-        throwVelocity *= valueOf(frictionRange);
-        startAngle += throwVelocity;
-        drawWheel();
-      } else {
-        throwVelocity = 0;
+  if (!isSpinning()) {
+    if (dragging) {
+      const pointerAngle = calcularAngulo();
+      startAngle = (pointerAngle - initialPointerAngle) + initialStartAngle;
+      drawWheel();
+      throwVelocity = (mousePosition.angle - pointerAngle) * -.7;
+      mousePosition.angle = pointerAngle;
+    } else {
+      if (throwVelocity > valueOf(startThresholdRange)) {
+        startRotateWheel();
+        return;
+      } else if (throwVelocity) {
+        if (throwVelocity > valueOf(stopThresholdRange)) {
+          throwVelocity *= valueOf(frictionRange);
+          startAngle += throwVelocity;
+          drawWheel();
+        } else {
+          throwVelocity = 0;
+        }
       }
     }
   }
-
   if (showIntro) {
     requestAnimationFrame(introAnimation)
   }
@@ -254,6 +257,10 @@ const introAnimation = () => {
 const activateIntro = () => {
   showIntro = true;
   introAnimation();
+}
+const saveInitialState = () => {
+  initialStartAngle = startAngle;
+  initialPointerAngle = calcularAngulo();
 }
 
 const drawMeasures = (radians: number) => {
@@ -306,8 +313,8 @@ window.addEventListener("keydown", (e) => {
   if (e.code === 'KeyS' && e.target == document.body) {
     e.preventDefault();
     if (!isSpinning()) {
-      startRotateWheel()
-    };
+      throwVelocity = 0.3;
+    }
   }
 });
 
@@ -317,8 +324,7 @@ spinButton.addEventListener("click", () => {
 
 wheelCanvas.addEventListener("mousedown", (event) => {
   dragging = true;
-  initialPointerAngle = calcularAngulo();
-  initialStartAngle = startAngle;
+  saveInitialState();
   wheelCanvas.classList.add("grabbing");
 });
 

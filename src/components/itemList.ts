@@ -1,5 +1,5 @@
 import { Item } from "../models/Item";
-import { querySelector } from "../utils";
+import { disableButtonTemporarily, querySelector } from "../utils";
 import { pushAlert } from "./alertMsg";
 import { logTimeAndName } from "./log";
 import { dibujarNombreSeleccionado, drawWheel } from "./wheel";
@@ -35,9 +35,13 @@ const addItem = (valor: string) => {
   const item = new Item(name);
   options.push(item);
   item.element.onclick = () => {
-    deleteItem(item);
-    drawWheel();
-    dibujarNombreSeleccionado();
+    if (options.length > 1) {
+      deleteItem(item);
+      drawWheel();
+      dibujarNombreSeleccionado();
+    } else {
+      pushAlert("must exist at least one name");
+    }
   };
   itemListElement.appendChild(item.element);
 };
@@ -96,10 +100,11 @@ addItemButton.addEventListener("click", () => {
 });
 
 saveAsDefaultButton.addEventListener("click", () => {
+  disableButtonTemporarily(saveAsDefaultButton);
   const namesArray = getItems().map(item => item.name);
-  console.log({namesArray});
-  localStorage.setItem("defaultNames", JSON.stringify({ items: namesArray}));
-  pushAlert("saved 👍")
+  console.log({ namesArray });
+  localStorage.setItem("defaultNames", JSON.stringify({ items: namesArray }));
+  pushAlert("saved 👍");
 });
 
 export const initItemList = () => {
