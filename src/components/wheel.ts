@@ -42,6 +42,57 @@ const gammaCorrection = (value: number) => {
   return Math.pow(value / 100, gamma) * 100;
 }
 
+const getRandomStartVelocity = () => {
+  const multiplier = 1 + Math.random() * 0.3
+  return valueOf(startThresholdRange) * multiplier;
+}
+
+const drawMeasures = (radians: number) => {
+  let degrees = radians * (180 / Math.PI);
+  const rect = wheelCanvas.getBoundingClientRect();
+  const x = mousePosition.x - rect.left;
+  const y = mousePosition.y - rect.top;
+  // Ajustar el rango de ángulos a [0, 360]
+  if (degrees < 0) {
+    degrees += 360;
+  }
+  //ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Dibujar el eje x
+  ctx.beginPath();
+  ctx.moveTo(0, centerY);
+  ctx.lineTo(wheelCanvas.width, centerY);
+  ctx.strokeStyle = 'green';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Dibujar el eje y
+  ctx.beginPath();
+  ctx.moveTo(centerX, 0);
+  ctx.lineTo(centerX, wheelCanvas.height);
+  ctx.strokeStyle = 'green';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Dibujar la línea
+  ctx.beginPath();
+  ctx.moveTo(centerX, centerY);
+  ctx.lineTo(x, y);
+  ctx.strokeStyle = 'blue';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Dibujar el arco
+  const radius = Math.min(centerX, centerY);
+  const startAngle = 0;
+  const endAngle = radians;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+  ctx.strokeStyle = 'red';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
 export const drawWheel = () => {
   arc = Math.PI / (getItems().length / 2);
 
@@ -263,63 +314,21 @@ const saveInitialState = () => {
   initialPointerAngle = calcularAngulo();
 }
 
-const drawMeasures = (radians: number) => {
-  let degrees = radians * (180 / Math.PI);
-  const rect = wheelCanvas.getBoundingClientRect();
-  const x = mousePosition.x - rect.left;
-  const y = mousePosition.y - rect.top;
-  // Ajustar el rango de ángulos a [0, 360]
-  if (degrees < 0) {
-    degrees += 360;
+const throwWheel = () => {
+  if (!isSpinning()) {
+    throwVelocity = getRandomStartVelocity();
   }
-  //ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Dibujar el eje x
-  ctx.beginPath();
-  ctx.moveTo(0, centerY);
-  ctx.lineTo(wheelCanvas.width, centerY);
-  ctx.strokeStyle = 'green';
-  ctx.lineWidth = 1;
-  ctx.stroke();
-
-  // Dibujar el eje y
-  ctx.beginPath();
-  ctx.moveTo(centerX, 0);
-  ctx.lineTo(centerX, wheelCanvas.height);
-  ctx.strokeStyle = 'green';
-  ctx.lineWidth = 1;
-  ctx.stroke();
-
-  // Dibujar la línea
-  ctx.beginPath();
-  ctx.moveTo(centerX, centerY);
-  ctx.lineTo(x, y);
-  ctx.strokeStyle = 'blue';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // Dibujar el arco
-  const radius = Math.min(centerX, centerY);
-  const startAngle = 0;
-  const endAngle = radians;
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-  ctx.strokeStyle = 'red';
-  ctx.lineWidth = 2;
-  ctx.stroke();
 }
 
 window.addEventListener("keydown", (e) => {
   if (e.code === 'KeyS' && e.target == document.body) {
     e.preventDefault();
-    if (!isSpinning()) {
-      throwVelocity = 0.3;
-    }
+    throwWheel();
   }
 });
 
 spinButton.addEventListener("click", () => {
-  throwVelocity = 0.3;
+  throwWheel();
 });
 
 wheelCanvas.addEventListener("mousedown", (event) => {
