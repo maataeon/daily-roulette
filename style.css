@@ -99,6 +99,7 @@ body::before {
 
 .itemList-container {
   width: 22rem;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   background: #111;
@@ -108,6 +109,7 @@ body::before {
 
 .itemList-container > .tab {
   padding: 0.5rem 1rem;
+  border-bottom: solid #333 1px;
 }
 
 button {
@@ -124,7 +126,7 @@ button:disabled, .button:disabled {
   opacity: .5;
 }
 
-button.button, .button {
+.button {
   display: flex;
   align-items: center;
   background-color: #FEFEFE;
@@ -151,8 +153,7 @@ button.button, .button {
 
 .itemInput-container {
   display: flex;
-  justify-content: space-between;
-  border-bottom: solid #333 1px;
+  justify-content: space-between; 
   gap: 1rem;
   background: #333333;
   padding: 1.5rem 1rem !important;
@@ -172,7 +173,7 @@ button.button, .button {
   display: flex;
   flex-grow: 1;
   flex-direction: column;
-  border-bottom: solid #333 1px;
+  overflow-y: auto;
 }
 
 button.item {
@@ -222,13 +223,18 @@ button.item {
   font-family: monospace;
 }
 
-.inputControl {
+.inputController {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.inputControl input[type="range"] {
+.customBackground-container {
+  display: flex;
+  gap: 1rem;
+}
+
+.inputController input[type="range"] {
   width: 256px;
 }
 
@@ -240,7 +246,6 @@ button.item {
   width: 18rem;
   overflow: hidden;
   white-space: nowrap;
-  display: block;
   text-overflow: ellipsis;
 }
 
@@ -260,10 +265,10 @@ button.item {
   flex-direction: column;
 }
 
-.saveAsDefaultButton-container {
+.actionButtons-container {
   display: flex;
   justify-content: flex-end;
-  margin-top: 2rem;
+  gap: 1rem;
 }
 
 .logEntry {
@@ -278,6 +283,23 @@ button.item {
   position: fixed;
   right: 0.5rem;
   bottom: 0.5rem;
+  background-color: #00000066;
+  padding: .25rem 1rem;
+}
+
+.helperText {
+  display: flex;
+  flex-grow: 1;
+  justify-content: flex-start;
+  color: rgb(255 255 255 / 60%);
+  font-family: monospace;
+  padding-left: 0.5rem;
+}
+
+.title {
+  color: #FEFEFE;
+  font-family: monospace;
+  margin-bottom: .5rem;
 }
 
 /* For WebKit-based browsers (Chrome, Safari, Opera) */

@@ -2,17 +2,18 @@ import { Item } from "../models/Item";
 import { disableButtonTemporarily, querySelector } from "../utils";
 import { pushAlert } from "./alertMsg";
 import { logTimeAndName } from "./log";
+import state, { saveItems, storeObject } from "./store";
 import { dibujarNombreSeleccionado, drawWheel } from "./wheel";
 
 const inputPalabras = querySelector('#itemInput') as HTMLInputElement;
 const addItemButton = querySelector('#addItem-button') as HTMLButtonElement;
 const itemListElement = querySelector('#itemList') as HTMLDivElement;
 const saveAsDefaultButton = querySelector('#saveAsDefault') as HTMLButtonElement;
-
+const copyList = querySelector('#copyList') as HTMLButtonElement;
 
 let options: Item[] = [];
 let selectedItem: Item | null;
-let nombres: string[] | null;
+let nombres: string[];
 const defaultNameJSON = `{
   "items":[
      "default",
@@ -103,12 +104,23 @@ saveAsDefaultButton.addEventListener("click", () => {
   disableButtonTemporarily(saveAsDefaultButton);
   const namesArray = getItems().map(item => item.name);
   console.log({ namesArray });
-  localStorage.setItem("defaultNames", JSON.stringify({ items: namesArray }));
+  state.items = namesArray;
+  saveItems(namesArray);
   pushAlert("saved 👍");
 });
 
+copyList.addEventListener("click", () => {
+  const namesArray = getItems().map(item => item.name).join(",");
+  navigator.clipboard.writeText(namesArray)
+    .then(() => {
+      pushAlert("copied to clipboard !")
+    })
+    .catch(() => {
+      pushAlert("copy failed")
+    });
+});
+
 export const initItemList = () => {
-  const defaultNames = JSON.parse(localStorage.getItem("defaultNames") ?? defaultNameJSON);
-  nombres = defaultNames.items;
+  nombres = state.items;
   loadInitialItems();
 }

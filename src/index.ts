@@ -1,5 +1,5 @@
 import { initAudio } from "./components/audio";
-import { initControls } from "./components/controls";
+import { initControls } from "./components/controlls";
 import { initItemList } from "./components/itemList";
 import { initRoulette } from "./components/wheel";
 import { initStarrySky } from "./components/starrySky";
